@@ -1,0 +1,44 @@
+[gd_scene load_steps=5 format=3 uid="uid://ccpmapl0ynolf"]
+
+[ext_resource type="Script" path="res://pq/Scripts/level_failed.gd" id="1_dd4dj"]
+[ext_resource type="VideoStream" path="res://failed.ogv" id="3_lr6yq"]
+[ext_resource type="AudioStream" uid="uid://cq6t5bboqts5s" path="res://pq/Assets/BGM.mp3" id="4_8dqxa"]
+[ext_resource type="Texture2D" uid="uid://bn4ser8ntbvaw" path="res://pq/Assets/Exit Button.png" id="5_5v2ng"]
+
+[node name="LevelFailed" type="Node2D"]
+script = ExtResource("1_dd4dj")
+
+[node name="ParallaxBackground" type="ParallaxBackground" parent="."]
+
+[node name="Sprite2D" type="Sprite2D" parent="ParallaxBackground"]
+position = Vector2(578, 324)
+scale = Vector2(0.384667, 0.385071)
+
+[node name="VideoStreamPlayer" type="VideoStreamPlayer" parent="ParallaxBackground/Sprite2D"]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -957.172
+offset_top = -893.842
+offset_right = 1042.83
+offset_bottom = 914.158
+grow_horizontal = 2
+grow_vertical = 2
+stream = ExtResource("3_lr6yq")
+autoplay = true
+loop = true
+
+[node name="Button" type="TextureButton" parent="."]
+offset_left = 20.0
+offset_top = 13.0
+offset_right = 281.0
+offset_bottom = 129.0
+texture_normal = ExtResource("5_5v2ng")
+stretch_mode = 0
+
+[node name="music" type="AudioStreamPlayer2D" parent="."]
+stream = ExtResource("4_8dqxa")
+
+[connection signal="pressed" from="Button" to="." method="_on_button_pressed"]
