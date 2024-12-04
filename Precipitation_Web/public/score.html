@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Precipitate Quest - Scores</title>
+    <!-- Font Awesome CDN for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <!-- jsPDF and AutoTable CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.13/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            height: 100vh;
+            background: url('bg.jpg') no-repeat center center fixed;
+            background-size: cover;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+        }
+
+        .container {
+            background-color: rgba(0, 0, 0, 0.8);
+            padding: 20px 40px;
+            border-radius: 15px;
+            width: 80%;
+            max-width: 600px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            height: 80%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            font-weight: bold;
+            text-transform: uppercase;
+            color: #ffcc00;
+            margin: 0;
+            text-align: center;
+            flex-grow: 1;
+        }
+
+        .home-button, .download-button {
+            position: absolute;
+            background-color: #ffcc00;
+            color: black;
+            padding: 10px;
+            border-radius: 5px;
+            border: none;
+            font-size: 1.2em;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.3s ease;
+        }
+
+        .home-button { left: 0; }
+        .download-button { right: 0; }
+
+        .home-button:hover, .download-button:hover {
+            background-color: #e6b800;
+        }
+
+        .search-box {
+            display: flex;
+            justify-content: center;
+            margin-top: 10px;
+            margin-bottom: 15px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            border: none;
+            font-size: 1em;
+            max-width: 500px;
+        }
+
+        .score-list-container {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .score-list {
+            list-style: none;
+            padding: 0;
+            font-size: 1.1em;
+            margin: 0;
+        }
+
+        .score-item {
+            display: flex;
+            flex-direction: column;
+            padding: 10px 15px;
+            background-color: rgba(255, 255, 255, 0.1);
+            margin-bottom: 10px;
+            border-radius: 8px;
+            color: white;
+        }
+
+        .score-item span {
+            margin-bottom: 5px;
+        }
+
+        .score-item .email {
+            color: red;
+        }
+
+        .score-list-container::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        .score-list-container::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .score-list-container::-webkit-scrollbar-thumb {
+            background-color: #ffcc00;
+            border-radius: 20px;
+            border: 3px solid transparent;
+        }
+    </style>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+        import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "precipitatequest.firebaseapp.com",
+            projectId: "precipitatequest",
+            storageBucket: "precipitatequest.appspot.com",
+            messagingSenderId: "303381060115",
+            appId: "1:303381060115:web:e3526edec4576f3552fde6",
+            measurementId: "G-5WVWHY1WTT"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        let allScores = [];
+
+        async function loadScores() {
+            const userCollection = collection(db, "Users");
+            const userSnapshot = await getDocs(userCollection);
+            const scoreList = document.getElementById('score-list');
+            scoreList.innerHTML = '';
+
+            allScores = [];
+            userSnapshot.forEach((doc) => {
+                const data = doc.data();
+                data.totalScore = (data.level1 || 0) + (data.level2 || 0) + (data.level3 || 0); // Calculate total score
+                allScores.push(data);
+            });
+            displayScores(allScores);
+        }
+
+        function displayScores(scores) {
+            const scoreList = document.getElementById('score-list');
+            scoreList.innerHTML = '';
+            scores.forEach(data => {
+                const li = createScoreItem(data);
+                scoreList.appendChild(li);
+            });
+        }
+
+        function createScoreItem(data) {
+            const li = document.createElement('li');
+            li.classList.add('score-item');
+            li.innerHTML = `
+                <span class="email"><strong>Email:</strong> ${data.email || 'N/A'}</span>
+                <span><strong>First Name:</strong> ${data.first_name || 'N/A'}</span>
+                <span><strong>Last Name:</strong> ${data.last_name || 'N/A'}</span>
+                <span><strong>Level 1 Score:</strong> ${data.level1 || 0}</span>
+                <span><strong>Level 2 Score:</strong> ${data.level2 || 0}</span>
+                <span><strong>Level 3 Score:</strong> ${data.level3 || 0}</span>
+                <span><strong>Total Score:</strong> ${data.totalScore}</span>
+            `;
+            return li;
+        }
+
+        function filterScores() {
+            const searchText = document.getElementById('search-input').value.toLowerCase();
+            const filteredScores = allScores.filter(score =>
+                (score.email && score.email.toLowerCase().includes(searchText)) ||
+                (score.first_name && score.first_name.toLowerCase().includes(searchText)) ||
+                (score.last_name && score.last_name.toLowerCase().includes(searchText))
+            );
+            displayScores(filteredScores);
+        }
+
+        function generatePDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            doc.setFontSize(18);
+            doc.text("User Scores", 14, 22);
+
+            const tableData = allScores.map(score => [
+                score.first_name || 'N/A',
+                score.last_name || 'N/A',
+                score.level1 || 0,
+                score.level2 || 0,
+                score.level3 || 0,
+                score.totalScore || 0
+            ]);
+
+            doc.autoTable({
+                head: [['FirstName', 'LastName', 'Level 1 Score', 'Level 2 Score', 'Level 3 Score', 'Total']],
+                body: tableData,
+                startY: 30
+            });
+
+            doc.save("scores.pdf");
+        }
+
+        window.loadScores = loadScores;
+        window.filterScores = filterScores;
+        window.generatePDF = generatePDF;
+
+        window.onload = loadScores;
+    </script>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <button class="home-button" onclick="window.history.back()">
+                <i class="fas fa-home"></i>
+            </button>
+            <h1>User Scores</h1>
+            <button class="download-button" onclick="generatePDF()">
+                <i class="fas fa-download"></i>
+            </button>
+        </div>
+        <div class="search-box">
+            <input type="text" id="search-input" class="search-input" placeholder="Search by first name, last name, or email..." oninput="filterScores()">
+        </div>
+        <div class="score-list-container">
+            <ul id="score-list" class="score-list"></ul>
+        </div>
+    </div>
+</body>
+</html>

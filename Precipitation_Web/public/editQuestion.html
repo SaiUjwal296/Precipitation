@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Question - PrecipitateQuest</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            height: 100vh;
+            background: url('bg.jpg') no-repeat center center fixed;
+            background-size: cover;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+        }
+
+        .container {
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 40px;
+            border-radius: 15px;
+            width: 100%;
+            max-width: 600px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            position: relative;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            text-align: center;
+            color: #ffcc00;
+            margin-bottom: 20px;
+        }
+
+        label, input {
+            display: block;
+            width: 100%;
+            margin-bottom: 15px;
+        }
+
+        input {
+            padding: 10px;
+            border-radius: 8px;
+            border: 2px solid #ffcc00;
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            font-size: 1em;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #ffffff;
+        }
+
+        button {
+            padding: 10px;
+            border-radius: 8px;
+            background-color: #ff6600;
+            color: white;
+            border: none;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #e65c00;
+        }
+
+        .back-button {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background-color: #ffcc00;
+            color: black;
+            padding: 10px;
+            border-radius: 5px;
+            border: none;
+            margin-right: 5px;
+            font-size: 1em;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.3s ease;
+        }
+
+        .back-button:hover {
+            background-color: #e6b800;
+        }
+    </style>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+        import { getFirestore, doc, getDoc, updateDoc, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "precipitatequest.firebaseapp.com",
+            projectId: "precipitatequest",
+            storageBucket: "precipitatequest.appspot.com",
+            messagingSenderId: "303381060115",
+            appId: "1:303381060115:web:e3526edec4576f3552fde6",
+            measurementId: "G-5WVWHY1WTT"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        async function loadQuestionData() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const questionId = urlParams.get("id");
+
+            if (!questionId) {
+                alert("No question ID found.");
+                return;
+            }
+
+            try {
+                const questionDoc = await getDoc(doc(db, "questions", questionId));
+                if (questionDoc.exists()) {
+                    const data = questionDoc.data();
+                    document.getElementById('question').value = data.question || '';
+                    document.getElementById('level').value = data.level || '';
+                    document.getElementById('option1').value = data.options[0] || '';
+                    document.getElementById('option2').value = data.options[1] || '';
+                    document.getElementById('option3').value = data.options[2] || '';
+                    document.getElementById('answer').value = data.answer || '';
+                    document.getElementById('hint').value = data.hints ? data.hints[0] || '' : '';
+                } else {
+                    alert("Question not found.");
+                }
+            } catch (error) {
+                console.error("Error fetching question data: ", error);
+            }
+        }
+
+        async function saveUpdatedQuestion() {
+            const questionId = new URLSearchParams(window.location.search).get("id");
+            const updatedQuestion = document.getElementById('question').value.trim().toLowerCase();
+            const option1 = document.getElementById('option1').value.trim();
+            const option2 = document.getElementById('option2').value.trim();
+            const option3 = document.getElementById('option3').value.trim();
+            const answer = document.getElementById('answer').value.trim();
+            const level = document.getElementById('level').value;
+            const hint = document.getElementById('hint').value.trim();
+
+            if (!updatedQuestion || !option1 || !option2 || !option3 || !answer || !hint) {
+                alert('All fields must be filled out.');
+                return;
+            }
+
+            const options = [option1, option2, option3];
+            if (new Set(options).size !== options.length) {
+                alert('Options must be unique.');
+                return;
+            }
+
+            if (!options.includes(answer)) {
+                alert('Answer must be one of the options.');
+                return;
+            }
+
+            const questionCollection = collection(db, "questions");
+            const duplicateCheckQuery = query(
+                questionCollection,
+                where("question", "==", updatedQuestion),
+                where("level", "==", level)
+            );
+            const querySnapshot = await getDocs(duplicateCheckQuery);
+
+            if (!querySnapshot.empty && querySnapshot.docs[0].id !== questionId) {
+                alert("A similar question already exists at this level.");
+                return;
+            }
+
+            try {
+                await updateDoc(doc(db, "questions", questionId), {
+                    question: updatedQuestion,
+                    options: options,
+                    answer: answer,
+                    hints: [hint]
+                });
+                alert('Question updated successfully!');
+                window.location.href = "quest.html";
+            } catch (error) {
+                console.error("Error updating document: ", error);
+            }
+        }
+
+        window.onload = loadQuestionData;
+        window.saveUpdatedQuestion = saveUpdatedQuestion;
+    </script>
+</head>
+<body>
+    <div class="container">
+        <button class="back-button" onclick="window.location.href='quest.html'">Back</button>
+        <h1>Edit Question</h1>
+        <form onsubmit="event.preventDefault(); saveUpdatedQuestion();">
+            <label for="question">Question:</label>
+            <input type="text" id="question" name="question">
+
+            <label for="level" style="display: none;">Level:</label>
+            <input type="text" id="level" name="level" readonly style="display: none;">
+
+            <label for="options">Options:</label>
+            <input type="text" id="option1" name="option1" placeholder="Option 1">
+            <input type="text" id="option2" name="option2" placeholder="Option 2">
+            <input type="text" id="option3" name="option3" placeholder="Option 3">
+
+            <label for="answer">Answer:</label>
+            <input type="text" id="answer" name="answer" placeholder="Enter the correct answer">
+
+            <label for="hint">Hint:</label>
+            <input type="text" id="hint" name="hint" placeholder="Hint">
+
+            <button type="submit">Save Changes</button>
+        </form>
+    </div>
+</body>
+</html>

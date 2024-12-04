@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PrecipitateQuest</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            height: 100vh;
+            background: url('bg.jpg') no-repeat center center fixed;
+            background-size: cover;
+            display: flex;
+            color: white;
+        }
+
+        .container {
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 60px;
+            border-radius: 15px;
+            width: 100%;
+            max-width: 650px;
+            margin: 10px auto;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            position: relative;
+        }
+
+        .home-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background-color: #ffcc00;
+            color: black;
+            padding: 10px;
+            border-radius: 5px;
+            border: none;
+            font-size: 1.2em;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.3s ease;
+        }
+
+        .home-button:hover {
+            background-color: #e6b800;
+        }
+
+        h1 {
+            font-size: 3em;
+            margin-bottom: 20px;
+            font-weight: bold;
+            text-transform: uppercase;
+            color: #ffcc00;
+            text-align: center;
+        }
+
+        form {
+            margin-bottom: 30px;
+        }
+
+        label {
+            font-size: 1.4em;
+            margin-bottom: 10px;
+            display: block;
+            color: #ffcc00;
+        }
+
+        input, select {
+            padding: 10px;
+            width: 100%;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            border: 2px solid #ffcc00;
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            font-size: 1.2em;
+            box-sizing: border-box;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #ffffff;
+        }
+
+        .options-container {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .options-container input {
+            width: 30%;
+        }
+
+        button {
+            padding: 15px 40px;
+            background-color: #ff6600;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.5em;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 20px rgba(255, 102, 0, 0.4);
+        }
+
+        button:hover {
+            background-color: #e65c00;
+            box-shadow: 0 10px 30px rgba(255, 102, 0, 0.7);
+        }
+    </style>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+        import { getFirestore, collection, getDocs, addDoc, query, where } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+          apiKey: "YOUR_API_KEY",
+          authDomain: "precipitatequest.firebaseapp.com",
+          projectId: "precipitatequest",
+          storageBucket: "precipitatequest.appspot.com",
+          messagingSenderId: "303381060115",
+          appId: "1:303381060115:web:e3526edec4576f3552fde6",
+          measurementId: "G-5WVWHY1WTT"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // const formatChemicalFormula = (formula) => {
+        //     // Replace ion charges (e.g., 2- or 3+ after a formula) with superscripts
+        //     formula = formula.replace(/(\d+)(\+|-)/g, (_, number, sign) => {
+        //         const superscriptNumbers = number.split('').map(digit => '⁰¹²³⁴⁵⁶⁷⁸⁹'[digit]).join('');
+        //         const superscriptSign = sign === '+' ? '⁺' : '⁻';
+        //         return `${superscriptNumbers}${superscriptSign}`;
+        //     });
+
+        //     // Replace digits immediately following element symbols with subscripts
+        //     formula = formula.replace(/([A-Za-z])(\d+)/g, (_, element, digits) =>
+        //         element + digits.split('').map(digit => '₀₁₂₃₄₅₆₇₈₉'[digit]).join('')
+        //     );
+
+        //     // Replace standalone ion charges (e.g., Cl-) with superscripts
+        //     formula = formula.replace(/(\+|-)/g, sign => (sign === '+' ? '⁺' : '⁻'));
+
+        //     return formula;
+        // };
+
+        // window.changeChemicalEquation = function() {
+        //     const userInput = document.getElementById('question').value.trim();
+        //     const option1 = document.getElementById('option1').value.trim();
+        //     const option2 = document.getElementById('option2').value.trim();
+        //     const option3 = document.getElementById('option3').value.trim();
+        //     const answer = document.getElementById('answer').value.trim();
+
+        //     document.getElementById('question').value = formatChemicalFormula(userInput);
+        //     document.getElementById('option1').value = formatChemicalFormula(option1);
+        //     document.getElementById('option2').value = formatChemicalFormula(option2);
+        //     document.getElementById('option3').value = formatChemicalFormula(option3);
+        //     document.getElementById('answer').value = formatChemicalFormula(answer);
+        // };
+
+        async function saveQuestion() {
+            const selectedLevel = localStorage.getItem('level'); // Retrieve level from localStorage
+            const userInput = document.getElementById('question').value.trim();
+            const option1 = document.getElementById('option1').value.trim();
+            const option2 = document.getElementById('option2').value.trim();
+            const option3 = document.getElementById('option3').value.trim();
+            const answer = document.getElementById('answer').value.trim();
+            const hint = document.getElementById('hint').value.trim();
+
+            if (!selectedLevel) {
+                alert('Level is not set. Please go back and select a level.');
+                return;
+            }
+
+            if (!userInput || !option1 || !option2 || !option3 || !answer || !hint) {
+                alert('Please fill out all fields: question, options, answer, and hint.');
+                return;
+            }
+
+            const options = [option1, option2, option3];
+            if (new Set(options).size !== options.length) {
+                alert('All options must be different.');
+                return;
+            }
+
+            if (!options.includes(answer)) {
+                alert('The answer must match one of the provided options.');
+                return;
+            }
+
+            const questionCollection = collection(db, "questions");
+
+            const questionQuery = query(questionCollection,
+                where("question", "==", userInput),
+                where("level", "==", selectedLevel)
+            );
+
+            const querySnapshot = await getDocs(questionQuery);
+
+            if (!querySnapshot.empty) {
+                alert('Given question already exists in this level.');
+                return;
+            }
+
+            try {
+                let newEntry = {
+                    level: selectedLevel,
+                    question: userInput,
+                    options: options,
+                    answer: answer,
+                    hint: hint
+                };
+
+                await addDoc(questionCollection, newEntry);
+                alert('Question added successfully!');
+            } catch (error) {
+                console.error("Error adding document: ", error);
+            }
+        }
+
+        window.saveQuestion = saveQuestion;
+
+        window.applySuperscript = function() {
+            const textarea = document.getElementById('question');
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const selectedText = textarea.value.substring(start, end);
+
+            // Convert numbers in the selected text to superscripts
+            const superscriptText = selectedText.replace(/\d/g, (digit) => '⁰¹²³⁴⁵⁶⁷⁸⁹'[digit])
+                                         .replace(/\+/g, '⁺') // Convert + to superscript
+                                         .replace(/-/g, '⁻'); // Convert - to superscript
+
+            // Update the textarea value with the superscripted text
+            textarea.value = textarea.value.substring(0, start) + superscriptText + textarea.value.substring(end);
+
+            // Reset the selection to the modified text
+            textarea.setSelectionRange(start, start + superscriptText.length);
+
+            // Correct options if selected
+            for (let i = 1; i <= 3; i++) {
+                const optionTextarea = document.getElementById(`option${i}`);
+                const optionStart = optionTextarea.selectionStart;
+                const optionEnd = optionTextarea.selectionEnd;
+                const optionSelectedText = optionTextarea.value.substring(optionStart, optionEnd);
+                const optionSuperscriptText = optionSelectedText.replace(/\d/g, (digit) => '⁰¹²³⁴⁵⁶⁷⁸⁹'[digit])
+                                                         .replace(/\+/g, '⁺') // Convert + to superscript
+                                                         .replace(/-/g, '⁻'); // Convert - to superscript
+                optionTextarea.value = optionTextarea.value.substring(0, optionStart) + optionSuperscriptText + optionTextarea.value.substring(optionEnd);
+                optionTextarea.setSelectionRange(optionStart, optionStart + optionSuperscriptText.length);
+            }
+        };
+
+        window.applySubscript = function() {
+            const textarea = document.getElementById('question');
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const selectedText = textarea.value.substring(start, end);
+
+            // Convert numbers in the selected text to subscripts
+            const subscriptText = selectedText.replace(/\d/g, (digit) => '₀₁₂₃₄₅₆₇₈₉'[digit]);
+
+            // Update the textarea value with the subscripted text
+            textarea.value = textarea.value.substring(0, start) + subscriptText + textarea.value.substring(end);
+
+            // Reset the selection to the modified text
+            textarea.setSelectionRange(start, start + subscriptText.length);
+
+            // Correct options if selected
+            for (let i = 1; i <= 3; i++) {
+                const optionTextarea = document.getElementById(`option${i}`);
+                const optionStart = optionTextarea.selectionStart;
+                const optionEnd = optionTextarea.selectionEnd;
+                const optionSelectedText = optionTextarea.value.substring(optionStart, optionEnd);
+                const optionSubscriptText = optionSelectedText.replace(/\d/g, (digit) => '₀₁₂₃₄₅₆₇₈₉'[digit]);
+                optionTextarea.value = optionTextarea.value.substring(0, optionStart) + optionSubscriptText + optionTextarea.value.substring(optionEnd);
+                optionTextarea.setSelectionRange(optionStart, optionStart + optionSubscriptText.length);
+            }
+        };
+    </script>
+</head>
+<body>
+    <div class="container">
+        <!-- Home Button -->
+        <button class="home-button" onclick="history.back()">
+            <i class="fas fa-home"></i>
+        </button>
+
+        <h1>Precipitate Quest</h1>
+        <form onsubmit="event.preventDefault(); saveQuestion();">
+            <label for="question">Question:</label>
+            <input type="text" id="question" name="question" placeholder="Enter question here"><br><br>
+
+            <label for="options">Options:</label>
+            <div class="options-container">
+                <input type="text" id="option1" name="option1" placeholder="Option 1">
+                <input type="text" id="option2" name="option2" placeholder="Option 2">
+                <input type="text" id="option3" name="option3" placeholder="Option 3">
+            </div>
+
+            <label for="answer">Answer:</label>
+            <input type="text" id="answer" name="answer" placeholder="Enter the correct answer"><br><br>
+
+            <label for="hint">Hint:</label>
+            <input type="text" id="hint" name="hint" placeholder="Enter a hint"><br><br>
+
+            <button type="submit">Submit</button>
+        </form>
+        
+        <button id="superscriptButton" type="button" onclick="applySuperscript()">Superscript</button>
+        <button id="subscriptButton" type="button" onclick="applySubscript()">Subscript</button>
+    </div>
+</body>
+</html>

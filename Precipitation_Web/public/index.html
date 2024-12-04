@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="assets/css/styles.css">
+    <link href='https://cdn.jsdelivr.net/npm/boxicons@2.0.5/css/boxicons.min.css' rel='stylesheet'>
+    <title>Precipitate Quest</title>
+    <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
+    <style>
+        #targetIframe {
+            display: none;
+            width: 100%;
+            height: 100%;
+            border: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 9999;
+        }
+        #logout-button {
+            display: none;
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            padding: 10px 20px;
+            background-color: #f00;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            z-index: 10000;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <button id="logout-button" onclick="logout()">Logout</button>
+
+    <div class="login" id="login-content">
+        <div class="login__content">
+            <div class="login__img">
+                <img src="assets/img/img-login.svg" alt="Login Image">
+            </div>
+
+            <div class="login__forms">
+                <form action="" class="login__registre" id="login-in">
+                    <h1 class="login__title">Sign In</h1>
+
+                    <div class="login__box">
+                        <i class='bx bx-user login__icon'></i>
+                        <input type="text" placeholder="Username" class="login__input" id="signin-username">
+                    </div>
+
+                    <div class="login__box">
+                        <i class='bx bx-lock-alt login__icon'></i>
+                        <input type="password" placeholder="Password" class="login__input" id="signin-password">
+                    </div>
+
+                    <a href="#" class="login__button" id="signin-button">Sign In</a>
+                </form>
+
+                <form action="" class="login__create none" id="login-up">
+                    <h1 class="login__title">Create Account</h1>
+
+                    <div class="login__box">
+                        <i class='bx bx-user login__icon'></i>
+                        <input type="text" placeholder="Username" class="login__input">
+                    </div>
+
+                    <div class="login__box">
+                        <i class='bx bx-at login__icon'></i>
+                        <input type="text" placeholder="Email" class="login__input">
+                    </div>
+
+                    <div class="login__box">
+                        <i class='bx bx-lock-alt login__icon'></i>
+                        <input type="password" placeholder="Password" class="login__input">
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <iframe id="targetIframe" allowfullscreen allow="fullscreen"></iframe>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+        import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyChcFtCcNRJGQVyK9TgixJjzxFlwQqcGgo",
+            authDomain: "precipitatequest.firebaseapp.com",
+            projectId: "precipitatequest",
+            storageBucket: "precipitatequest.appspot.com",
+            messagingSenderId: "303381060115",
+            appId: "1:303381060115:web:e3526edec4576f3552fde6",
+            measurementId: "G-5WVWHY1WTT"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Check if the user is already logged in
+        if (localStorage.getItem("isLoggedIn") === "true") {
+            window.location.href = "home.html";
+        }
+
+        // Login Button Click Event
+        document.getElementById('signin-button').addEventListener('click', async function(event) {
+            event.preventDefault();
+            const username = document.getElementById('signin-username').value;
+            const password = document.getElementById('signin-password').value;
+
+            if (username === '' || password === '') {
+                alert('Please enter both username and password');
+                return;
+            }
+
+            try {
+                const adminRef = collection(db, 'Admin');
+                const q = query(adminRef, where("userName", "==", username), where("password", "==", password));
+                const querySnapshot = await getDocs(q);
+
+                if (!querySnapshot.empty) {
+                    // Successful login
+                    alert("Login successful!");
+                    localStorage.setItem("isLoggedIn", "true"); // Save login status
+                    window.location.href = "home.html"; // Redirect to home page
+                } else {
+                    // Incorrect username or password
+                    alert("Invalid username or password. Please try again.");
+                }
+            } catch (error) {
+                console.error("Error during login:", error);
+                alert("An error occurred. Please try again later.");
+            }
+        });
+
+        // Function to logout the user
+        function logout() {
+            localStorage.removeItem("isLoggedIn"); // Remove login status
+            document.getElementById('logout-button').style.display = 'none';
+            document.getElementById('targetIframe').style.display = 'none';
+            document.getElementById('login-content').style.display = 'flex';
+            alert("Logged out successfully.");
+        }
+    </script>
+</body>
+</html>
