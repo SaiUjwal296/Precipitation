@@ -220,6 +220,7 @@
 
                 await addDoc(questionCollection, newEntry);
                 alert('Question added successfully!');
+                window.location.href = "home.html"; // Redirect to home page
             } catch (error) {
                 console.error("Error adding document: ", error);
             }
@@ -312,10 +313,11 @@
             <input type="text" id="hint" name="hint" placeholder="Enter a hint"><br><br>
 
             <button type="submit">Submit</button>
+            <button id="superscriptButton" type="button" onclick="applySuperscript()">Superscript</button>
+        <button id="subscriptButton" type="button" onclick="applySubscript()">Subscript</button>
+    
         </form>
         
-        <button id="superscriptButton" type="button" onclick="applySuperscript()">Superscript</button>
-        <button id="subscriptButton" type="button" onclick="applySubscript()">Subscript</button>
-    </div>
+        </div>
 </body>
 </html>
