@@ -139,7 +139,7 @@
 
         async function saveUpdatedQuestion() {
             const questionId = new URLSearchParams(window.location.search).get("id");
-            const updatedQuestion = document.getElementById('question').value.trim().toLowerCase();
+            const updatedQuestion = document.getElementById('question').value.trim();
             const option1 = document.getElementById('option1').value.trim();
             const option2 = document.getElementById('option2').value.trim();
             const option3 = document.getElementById('option3').value.trim();
@@ -192,11 +192,71 @@
 
         window.onload = loadQuestionData;
         window.saveUpdatedQuestion = saveUpdatedQuestion;
+
+        window.applySuperscript = function() {
+            const textarea = document.getElementById('question');
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const selectedText = textarea.value.substring(start, end);
+
+            // Convert numbers in the selected text to superscripts
+            const superscriptText = selectedText.replace(/\d/g, (digit) => '⁰¹²³⁴⁵⁶⁷⁸⁹'[digit])
+                                         .replace(/\+/g, '⁺') // Convert + to superscript
+                                         .replace(/-/g, '⁻'); // Convert - to superscript
+
+            // Update the textarea value with the superscripted text
+            textarea.value = textarea.value.substring(0, start) + superscriptText + textarea.value.substring(end);
+
+            // Reset the selection to the modified text
+            textarea.setSelectionRange(start, start + superscriptText.length);
+
+            // Correct options if selected
+            for (let i = 1; i <= 3; i++) {
+                const optionTextarea = document.getElementById(`option${i}`);
+                const optionStart = optionTextarea.selectionStart;
+                const optionEnd = optionTextarea.selectionEnd;
+                const optionSelectedText = optionTextarea.value.substring(optionStart, optionEnd);
+                const optionSuperscriptText = optionSelectedText.replace(/\d/g, (digit) => '⁰¹²³⁴⁵⁶⁷⁸⁹'[digit])
+                                                         .replace(/\+/g, '⁺') // Convert + to superscript
+                                                         .replace(/-/g, '⁻'); // Convert - to superscript
+                optionTextarea.value = optionTextarea.value.substring(0, optionStart) + optionSuperscriptText + optionTextarea.value.substring(optionEnd);
+                optionTextarea.setSelectionRange(optionStart, optionStart + optionSuperscriptText.length);
+            }
+        };
+
+        window.applySubscript = function() {
+            const textarea = document.getElementById('question');
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const selectedText = textarea.value.substring(start, end);
+
+            // Convert numbers in the selected text to subscripts
+            const subscriptText = selectedText.replace(/\d/g, (digit) => '₀₁₂₃₄₅₆₇₈₉'[digit]);
+
+            // Update the textarea value with the subscripted text
+            textarea.value = textarea.value.substring(0, start) + subscriptText + textarea.value.substring(end);
+
+            // Reset the selection to the modified text
+            textarea.setSelectionRange(start, start + subscriptText.length);
+
+            // Correct options if selected
+            for (let i = 1; i <= 3; i++) {
+                const optionTextarea = document.getElementById(`option${i}`);
+                const optionStart = optionTextarea.selectionStart;
+                const optionEnd = optionTextarea.selectionEnd;
+                const optionSelectedText = optionTextarea.value.substring(optionStart, optionEnd);
+                const optionSubscriptText = optionSelectedText.replace(/\d/g, (digit) => '₀₁₂₃₄₅₆₇₈₉'[digit]);
+                optionTextarea.value = optionTextarea.value.substring(0, optionStart) + optionSubscriptText + optionTextarea.value.substring(optionEnd);
+                optionTextarea.setSelectionRange(optionStart, optionStart + optionSubscriptText.length);
+            }
+        };
     </script>
 </head>
 <body>
     <div class="container">
-        <button class="back-button" onclick="window.location.href='quest.html'">Back</button>
+        <button class="back-button" onclick="window.location.href='quest.html'">
+            <i class="fas fa-home"></i>
+        </button>
         <h1>Edit Question</h1>
         <form onsubmit="event.preventDefault(); saveUpdatedQuestion();">
             <label for="question">Question:</label>
@@ -217,6 +277,8 @@
             <input type="text" id="hint" name="hint" placeholder="Hint">
 
             <button type="submit">Save Changes</button>
+            <button id="superscriptButton" type="button" onclick="applySuperscript()">Superscript</button>
+            <button id="subscriptButton" type="button" onclick="applySubscript()">Subscript</button>
         </form>
     </div>
 </body>
